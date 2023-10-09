@@ -1,4 +1,7 @@
+import os
 import cv2
+
+
 
 def grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -11,11 +14,11 @@ def edge_detection(image):
     edges = cv2.Canny(gray, 50, 150)
     return edges
 
-def main():
-    print("===============================================================")
+def canaisDeCores():
+    print("================ Canais de Cores =================")
     print("Este exercício faz um tratamento em uma imagem da pasta Media.")
     image_name = input("Digite o nome da imagem (exemplo: Lenna.png): ")
-    image_path = f'../Media/{image_name}'
+    image_path = "Media/" + image_name
     image = cv2.imread(image_path)
 
     if image is None:
@@ -23,7 +26,8 @@ def main():
         return
     
     while True:
-        print("Menu de Opções:")
+        os.system('cls')
+        print("================ Menu de Opções: =================")
         print("1. Escala de Cinza")
         print("2. Desfoque")
         print("3. Detecção de Bordas")
@@ -47,5 +51,5 @@ def main():
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__canaisDeCores__":
+    canaisDeCores()

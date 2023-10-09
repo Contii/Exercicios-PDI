@@ -3,8 +3,11 @@ import os
 import random
 import numpy as np
 
-# Lista de vídeos na pasta Images
-videos = os.listdir("Media")
+# Obtém o caminho para a pasta "Media" a partir da raiz do projeto
+media_folder = os.path.join(os.path.dirname(__file__), "../Media")
+
+# Lista de vídeos na pasta "Media"
+videos = os.listdir(media_folder)
 videos = [video for video in videos if video.endswith(".mp4")]
 
 # Variáveis globais para os parâmetros dos filtros
@@ -77,7 +80,7 @@ def play_random_video():
 
     while True:
         # Abre o vídeo
-        video_path = os.path.join("Images", video)
+        video_path = os.path.join(media_folder, video)
         video_capture = cv2.VideoCapture(video_path)
 
         # Cria uma janela para exibir o vídeo original
@@ -277,32 +280,36 @@ def on_mouse_click(event, x, y, flags, param):
         # Abre uma nova janela com a cor correspondente
         cv2.imshow("Cor Clicada", color_image)
 
-
+def highGUI():
 # Menu principal
-while True:
-    # Exibe o menu
-    print("======= Atividade2-HighGUI =======")
-    print("1 - Abrir vídeo aleatório")
-    print("3 - Sair")
-    print("==============================")
+    while True:
+        # Exibe o menu
+        os.system('cls')
+        print("======= Atividade2-HighGUI =======")
+        print("1 - Abrir vídeo aleatório")
+        print("3 - Sair")
+        print("==============================")
 
 
-    # Lê a opção do usuário
-    option = input("Opção: ")
+        # Lê a opção do usuário
+        option = input("Opção: ")
 
-    # Verifica a opção do usuário
-    if option == "1":
-        # Reproduz um vídeo aleatório
-        print("===========================================================")
-        print("Atenção, os filtros podem sobrecarregar sua máquina.")
-        print("Pressione 1 para capturar um frame com filtros Passa-Baixa")
-        print("Pressione 2 para capturar um frame com filtros Passa-Baixa")
-        print("Pressione 3 para capturar um frame com o filta Passa-Alta")
-        print("Pressione 4 para binarizar a imagem")
-        print("Pressione ESC para sair")
+        # Verifica a opção do usuário
+        if option == "1":
+            # Reproduz um vídeo aleatório
+            print("===========================================================")
+            print("Atenção, os filtros podem sobrecarregar sua máquina.")
+            print("Pressione 1 para capturar um frame com filtros Passa-Baixa")
+            print("Pressione 2 para capturar um frame com filtros Passa-Baixa")
+            print("Pressione 3 para capturar um frame com o filta Passa-Alta")
+            print("Pressione 4 para binarizar a imagem")
+            print("Pressione ESC para sair")
 
-        print("===========================================================")
-        play_random_video()
-    elif option == "3":
-        # Sai do programa
-        break
+            print("===========================================================")
+            play_random_video()
+        elif option == "3":
+            # Sai do programa
+         break
+
+if __name__ == "__highGUI__":
+    highGUI()

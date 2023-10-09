@@ -1,4 +1,4 @@
-##Contador de Galinhas.
+Contador de Galinhas.
 
 Conte quantas galinhas existem no retângulo
 indicado pela imagem em ../Media/galinha.png, mostre o passo-a-passo.
