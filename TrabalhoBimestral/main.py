@@ -5,7 +5,7 @@ import cv2
 from vectorOfMats import VectorOfMats
 
 vec_of_mats = VectorOfMats()
-vec_of_mats2 = VectorOfMats()  # Crie uma nova instância para armazenar imagens temporariamente
+vec_of_mats2 = VectorOfMats()   # Crie uma nova instância para armazenar imagens temporariamente
 
 
 # Função para carregar uma imagem
@@ -34,17 +34,6 @@ def salvar_imagem():
             if file_path:
                 imagem_atual_rgb.save(file_path)
                 print("Imagem atual salva em:", file_path)
-
-def atualizar_imagem_exibida(imagem):
-    # Converta a imagem de BGR para RGB
-    imagem_rgb = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
-    # Atualize a imagem exibida na janela com a imagem RGB
-    imagem_pil = Image.fromarray(imagem_rgb)
-    imagem_pil = imagem_pil.resize((frame_direito.winfo_width() - 40, frame_direito.winfo_height() - 40))
-    image_tk = ImageTk.PhotoImage(image=imagem_pil)
-    label_imagem.configure(image=image_tk)
-    label_imagem.image = image_tk
-
 
 def exibir_imagem_anterior():
     if len(vec_of_mats.images) > 1:  # Verifique se há pelo menos duas imagens no vetor
@@ -78,16 +67,18 @@ def delete_imagem():
             # Se não houver mais imagens no vetor, limpe a imagem exibida
             label_imagem.configure(image=None)
 
+def atualizar_imagem_exibida(imagem):
+    # Converta a imagem de BGR para RGB
+    imagem_rgb = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
+    # Atualize a imagem exibida na janela com a imagem RGB
+    imagem_pil = Image.fromarray(imagem_rgb)
+    imagem_pil = imagem_pil.resize((frame_direito.winfo_width() - 40, frame_direito.winfo_height() - 40))
+    image_tk = ImageTk.PhotoImage(image=imagem_pil)
+    label_imagem.configure(image=image_tk)
+    label_imagem.image = image_tk
 
-
-
-
-
-
-
-
-
-
+# Variável global para armazenar o valor da trackbar
+threshold_value = 128
 
 def converter_cor(imagem):
     # Aplicar a conversão de cor na imagem (por exemplo, converter para tons de cinza)
@@ -103,6 +94,27 @@ def aplicar_conversao_cor():
         # Atualize a imagem exibida na janela com a imagem de bordas
         print("Imagem convertida e armazenada no vetor.")
         atualizar_imagem_exibida(imagem_convertida)
+
+# Função para aplicar a conversão de cor em tempo real
+def aplicar_conversao_cor_em_tempo_real(value):
+    global threshold_value
+    threshold_value = value
+    imagem_original = vec_of_mats.images[-1]
+    imagem_convertida = converter_cor(imagem_original)
+    vec_of_mats.images.append(imagem_convertida)
+    atualizar_imagem_exibida(imagem_convertida)
+
+# Função para aplicar a conversão de cor
+def aplicar_conversao_cor():
+    # Crie uma janela para ajustar a conversão em tempo real
+    janela_ajuste = tk.Toplevel()
+    janela_ajuste.title("Ajuste de Conversão de Cor")
+
+    # Crie uma trackbar para ajustar o valor da conversão em tempo real
+    trackbar = tk.Scale(janela_ajuste, from_=0, to=255, orient="horizontal", label="Valor de Conversão",
+                        command=aplicar_conversao_cor_em_tempo_real)
+    trackbar.set(threshold_value)  # Defina o valor inicial da trackbar
+    trackbar.pack(padx=10, pady=10)
 
 
 def apply_filter(imagem):
@@ -188,6 +200,7 @@ janela.columnconfigure(0, weight=1)
 janela.columnconfigure(1, weight=4)
 
 
+
 # Parte esquerda (20% da largura)
 frame_esquerdo = tk.Frame(janela, bg="light gray")
 frame_esquerdo.grid(row=0, column=0, sticky="nsew")  # "nsew" para preencher na direção norte-sul-leste-oeste
@@ -218,6 +231,7 @@ botao_next = tk.Button(frame_botoes_nav, text="  >  ", width=5, command=exibir_p
 botao_next.pack(side="left", padx=5)
 botao_delete = tk.Button(frame_esquerdo, text="  X  ", width=5, command=delete_imagem)
 botao_delete.grid(row=8, column=0, padx=10, pady=10)
+
 
 # Parte direita (80% da largura)
 frame_direito = tk.Frame(janela, bg="white")
