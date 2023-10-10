@@ -18,6 +18,20 @@ class VectorOfMats:
     def get_images(self):
         return self.images
     
+# crie uma classe vector_of_strings para armazenar strings
+class VectorOfStrings:
+    def __init__(self):
+        self.strings = []
+        self.string_names = []
+        
+    def add_string(self, string):
+        if string is not None:
+            self.strings.append(string)
+            self.string_names.append(string)
+            return True
+        else:
+            return False
+    
 # Exemplo de uso
 if __name__ == '__main__':
     vec_of_mats = VectorOfMats()

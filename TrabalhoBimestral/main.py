@@ -2,11 +2,12 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 import cv2
-from vectorOfMats import VectorOfMats
+from vectorOfMats import VectorOfMats, VectorOfStrings
 
 vec_of_mats = VectorOfMats()
 vec_of_mats2 = VectorOfMats()   # Crie uma nova instância para armazenar imagens temporariamente
-
+vector_of_strings = VectorOfStrings() # Crie uma nova instância para armazenar strings temporariamente
+vector_of_strings2 = VectorOfStrings() # Crie uma nova instância para armazenar strings temporariamente
 
 # Função para carregar uma imagem
 def carregar_imagem():
@@ -39,6 +40,7 @@ def exibir_imagem_anterior():
     if len(vec_of_mats.images) > 1:  # Verifique se há pelo menos duas imagens no vetor
         # Remova a imagem atual do vetor e adicione a imagem removida em vec_of_mats2
         imagem_anterior = vec_of_mats.images.pop()
+        vector_of_strings2.strings.append(vector_of_strings.strings.pop())
         vec_of_mats2.images.append(imagem_anterior)
         # Obtenha a imagem anterior
         imagem_anterior = vec_of_mats.images[-1]
@@ -50,6 +52,7 @@ def exibir_proxima_imagem():
         # Remova a imagem mais recente de vec_of_mats2 e adicione-a de volta a vec_of_mats
         imagem_proxima = vec_of_mats2.images.pop()
         vec_of_mats.images.append(imagem_proxima)
+        vector_of_strings.strings.append(vector_of_strings2.strings.pop())
         # Atualize a imagem exibida na janela com a imagem recuperada
         atualizar_imagem_exibida(imagem_proxima)
 
@@ -61,6 +64,8 @@ def delete_imagem():
         if len(vec_of_mats.images) > 0:
             # Obtenha a imagem anterior
             imagem_anterior = vec_of_mats.images[-1]
+            # remover a string do vetor de strings
+            vector_of_strings.strings.pop()
             # Atualize a imagem exibida na janela com a imagem anterior
             atualizar_imagem_exibida(imagem_anterior)
         else:
@@ -77,6 +82,7 @@ def atualizar_imagem_exibida(imagem):
     image_tk = ImageTk.PhotoImage(image=imagem_pil)
     label_imagem.configure(image=image_tk)
     label_imagem.image = image_tk
+    exibir_strings()
 
 def desabilitar_Botoes():
     botao2['state'] = 'disabled'
@@ -97,6 +103,18 @@ def habilitar_Botoes():
     botao_salvar['state'] = 'normal'
     botao_previous['state'] = 'normal'
     botao_next['state'] = 'normal'
+
+# Função para exibir as strings
+def exibir_strings():
+    # Limpe o widget Text
+    texto_strings.delete(1.0, tk.END)
+    
+    # Obtenha a lista de strings de vector_of_strings
+    strings = vector_of_strings.strings
+    
+    # Adicione as strings ao widget Text
+    for string in strings:
+        texto_strings.insert(tk.END, string + "\n")
 
 # variavel para armazenar valor da trackbar em tempo real
 trackbar_value = 0
@@ -128,6 +146,8 @@ def converter_cor(imagem):
         atualizar_imagem_exibida(imagem_convertida_rgb)
         # Continue aplicando o filtro em segundo plano
         janela.update()
+    # armazene a string no vetor de strings    
+    vector_of_strings.add_string("Transformação escala de cinza: cv2.COLOR_BGR2GRAY com alpha = " + str(trackbar_value/255.0))
     # Quando o botão "Confirmar" for pressionado, pare o filtro
     botao_Click = False
     return imagem_convertida_rgb
@@ -164,6 +184,8 @@ def apply_filter(imagem):
         atualizar_imagem_exibida(imagem_convertida_rgb)
         # Continue aplicando o filtro em segundo plano
         janela.update()
+    # armazene a string no vetor de strings    
+    vector_of_strings.add_string("Transformação filtro Gaussiano: cv2.GaussianBlur com kernel_size = " + str(trackbar_value))
     # Quando o botão "Confirmar" for pressionado, pare o filtro
     botao_Click = False
     return imagem_convertida_rgb
@@ -199,6 +221,8 @@ def aplicar_detecao(imagem):
         atualizar_imagem_exibida(imagem_convertida_rgb)
         # Continue aplicando o filtro em segundo plano
         janela.update()
+    # armazene a string no vetor de strings    
+    vector_of_strings.add_string("Transformação detecção de bordas: cv2.Canny com threshold1 = " + str(trackbar_value) + " e threshold2 = " + str(trackbar_value*2))
     # Quando o botão "Confirmar" for pressionado, pare o filtro
     botao_Click = False
     return imagem_convertida_rgb
@@ -235,6 +259,8 @@ def aplicar_binarizacao(imagem):
         atualizar_imagem_exibida(imagem_convertida_rgb)
         # Continue aplicando o filtro em segundo plano
         janela.update()
+    # armazene a string no vetor de strings    
+    vector_of_strings.add_string("Transformação binarização: cv2.threshold com threshold = " + str(trackbar_value))
     # Quando o botão "Confirmar" for pressionado, pare o filtro
     botao_Click = False
     return imagem_convertida_rgb
@@ -271,6 +297,8 @@ def apply_morphology(imagem):
         atualizar_imagem_exibida(imagem_convertida_rgb)
         # Continue aplicando o filtro em segundo plano
         janela.update()
+    # armazene a string no vetor de strings    
+    vector_of_strings.add_string("Transformação morfologica: cv2.erode com kernel_size = " + str(trackbar_value))
     # Quando o botão "Confirmar" for pressionado, pare o filtro
     botao_Click = False
     return imagem_convertida_rgb
@@ -294,7 +322,7 @@ def aplicar_morfologia():
 # Crie a janela principal
 janela = tk.Tk()
 janela.title("Minha Janela")
-janela.geometry("800x600")
+janela.geometry("900x700")
 # Divida a janela em 2 colunas e 1 linha
 janela.grid_rowconfigure(0, weight=1)
 janela.columnconfigure(0, weight=1)
@@ -332,13 +360,26 @@ botao_next = tk.Button(frame_botoes_nav, text="  >  ", width=5, command=exibir_p
 botao_next.pack(side="left", padx=5)
 # Configure o botão "Delete" no frame esquerdo
 botao_delete = tk.Button(frame_esquerdo, text="  X  ", width=5, command=delete_imagem)
-botao_delete.grid(row=8, column=0, padx=10, pady=10)
+botao_delete.grid(row=8, column=0, padx=5, pady=5)
 # Configure o botão "Confirmar" no frame esquerdo
 botao_confirmar = tk.Button(frame_esquerdo, text="Confirmar", width=largura_botoes, command=botao_Confirmar)
-botao_confirmar.grid(row=10, column=0, padx=10, pady=10)
+botao_confirmar.grid(row=10, column=0, padx=5, pady=5)
 # crie uma trackbar dentro do frame_esquerdo
 trackbar = tk.Scale(frame_esquerdo, from_=0, to=255, orient="horizontal", length=200)
-trackbar.grid(row=9, column=0, padx=10, pady=10)
+trackbar.grid(row=9, column=0, padx=5, pady=5)
+# crie um widget Text para exibir as strings com scrollbar
+texto_strings = tk.Text(frame_esquerdo, width=40, height=30)
+texto_strings.grid(row=11, column=0, padx=10, pady=10)
+# crie um widget Scrollbar para o widget Text
+scrollbar = tk.Scrollbar(frame_esquerdo, command=texto_strings.yview)
+scrollbar.grid(row=11, column=1, sticky="nsew")
+# Configure o widget Text para usar o widget Scrollbar
+texto_strings.config(yscrollcommand=scrollbar.set)
+
+
+
+
+
 
 
 # Parte direita (80% da largura)
