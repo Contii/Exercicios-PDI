@@ -23,7 +23,7 @@ def carregar_imagem():
         # Atualize a imagem no Label
         label_imagem.configure(image=image_tk)
         label_imagem.image = image_tk  # Mantenha uma referência para evitar que a imagem seja coletada pelo garbage collector
-
+    
 def salvar_imagem():
     if label_imagem.image:  # Verifique se há uma imagem atualmente exibida
         imagem_atual = ImageTk.getimage(label_imagem.image)  # Obtenha a imagem exibida
@@ -67,6 +67,7 @@ def delete_imagem():
             # Se não houver mais imagens no vetor, limpe a imagem exibida
             label_imagem.configure(image=None)
 
+
 def atualizar_imagem_exibida(imagem):
     # Converta a imagem de BGR para RGB
     imagem_rgb = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
@@ -77,117 +78,217 @@ def atualizar_imagem_exibida(imagem):
     label_imagem.configure(image=image_tk)
     label_imagem.image = image_tk
 
-# Variável global para armazenar o valor da trackbar
-threshold_value = 128
+def desabilitar_Botoes():
+    botao2['state'] = 'disabled'
+    botao3['state'] = 'disabled'
+    botao4['state'] = 'disabled'
+    botao5['state'] = 'disabled'
+    botao6['state'] = 'disabled'
+    botao_salvar['state'] = 'disabled'
+    botao_previous['state'] = 'disabled'
+    botao_next['state'] = 'disabled'
+
+def habilitar_Botoes():
+    botao2['state'] = 'normal'
+    botao3['state'] = 'normal'
+    botao4['state'] = 'normal'
+    botao5['state'] = 'normal'
+    botao6['state'] = 'normal'
+    botao_salvar['state'] = 'normal'
+    botao_previous['state'] = 'normal'
+    botao_next['state'] = 'normal'
+
+# variavel para armazenar valor da trackbar em tempo real
+trackbar_value = 0
+# variavel para armazenar o valor do botao confirmar
+botao_Click = False
+
+def botao_Confirmar():
+    global botao_Click 
+    botao_Click = True
+
+
 
 def converter_cor(imagem):
-    # Aplicar a conversão de cor na imagem (por exemplo, converter para tons de cinza)
-    imagem_convertida = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
-    # Converta a imagem de BGR para RGB antes de armazenar no vetor
-    imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
+    global trackbar_value, botao_Click
+    imagem_convertida_bgr = cv2.cvtColor(imagem, cv2.COLOR_RGB2BGR)
+    while not botao_Click:
+        # Atualize o valor da trackbar (pode ser ajustado)
+        trackbar_value = trackbar.get()
+        # Certifique-se de que o tamanho do kernel seja ímpar
+        if trackbar_value % 2 == 0:
+            trackbar_value += 1
+            trackbar.set(trackbar_value)
+        # Aplique o filtro Gaussian Blur à imagem atual de acordo com o valor da trackbar
+        imagem_convertida_gray = cv2.cvtColor(imagem_convertida_bgr, cv2.COLOR_BGR2GRAY)
+        # Ajuste a intensidade da conversão de cinza com base no valor da trackbar
+        imagem_convertida_gray = cv2.convertScaleAbs(imagem_convertida_gray, alpha=trackbar_value/255.0)
+        imagem_convertida_rgb = cv2.cvtColor(imagem_convertida_gray, cv2.COLOR_BGR2RGB)
+        # Atualize a imagem exibida na interface gráfica
+        atualizar_imagem_exibida(imagem_convertida_rgb)
+        # Continue aplicando o filtro em segundo plano
+        janela.update()
+    # Quando o botão "Confirmar" for pressionado, pare o filtro
+    botao_Click = False
     return imagem_convertida_rgb
+
 def aplicar_conversao_cor():
     if vec_of_mats.images:
+        # desabilitar botões de filtro
+        desabilitar_Botoes()
         imagem_original = vec_of_mats.images[-1]  # Obtenha a imagem mais recente do vetor
         imagem_convertida = converter_cor(imagem_original)  # Aplique a conversão de cor
         vec_of_mats.images.append(imagem_convertida)  # Armazene a imagem convertida no vetor
         # Atualize a imagem exibida na janela com a imagem de bordas
         print("Imagem convertida e armazenada no vetor.")
         atualizar_imagem_exibida(imagem_convertida)
+        # habilitar botões de filtro
+        habilitar_Botoes()
 
-# Função para aplicar a conversão de cor em tempo real
-def aplicar_conversao_cor_em_tempo_real(value):
-    global threshold_value
-    threshold_value = value
-    imagem_original = vec_of_mats.images[-1]
-    imagem_convertida = converter_cor(imagem_original)
-    vec_of_mats.images.append(imagem_convertida)
-    atualizar_imagem_exibida(imagem_convertida)
-
-# Função para aplicar a conversão de cor
-def aplicar_conversao_cor():
-    # Crie uma janela para ajustar a conversão em tempo real
-    janela_ajuste = tk.Toplevel()
-    janela_ajuste.title("Ajuste de Conversão de Cor")
-
-    # Crie uma trackbar para ajustar o valor da conversão em tempo real
-    trackbar = tk.Scale(janela_ajuste, from_=0, to=255, orient="horizontal", label="Valor de Conversão",
-                        command=aplicar_conversao_cor_em_tempo_real)
-    trackbar.set(threshold_value)  # Defina o valor inicial da trackbar
-    trackbar.pack(padx=10, pady=10)
 
 
 def apply_filter(imagem):
+    global trackbar_value, botao_Click
     imagem_convertida_bgr = cv2.cvtColor(imagem, cv2.COLOR_RGB2BGR)
-    # Aplique o filtro à imagem atual, você pode aplicar um filtro de suavização da seguinte forma:
-    imagem_convertida = cv2.GaussianBlur(imagem_convertida_bgr, (5, 5), 0)
-    # Converta a imagem de BGR para RGB antes de armazenar no vetor
-    imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
+    while not botao_Click:
+        # Atualize o valor da trackbar (pode ser ajustado)
+        trackbar_value = trackbar.get()
+        # Certifique-se de que o tamanho do kernel seja ímpar
+        if trackbar_value % 2 == 0:
+            trackbar_value += 1
+            trackbar.set(trackbar_value)
+        # Aplique o filtro Gaussian Blur à imagem atual de acordo com o valor da trackbar
+        imagem_convertida = cv2.GaussianBlur(imagem_convertida_bgr, (trackbar_value, trackbar_value), 0)
+        imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
+        # Atualize a imagem exibida na interface gráfica
+        atualizar_imagem_exibida(imagem_convertida_rgb)
+        # Continue aplicando o filtro em segundo plano
+        janela.update()
+    # Quando o botão "Confirmar" for pressionado, pare o filtro
+    botao_Click = False
     return imagem_convertida_rgb
+
 def aplicar_filtro():
     if vec_of_mats.images:
+        # desabilitar botões de filtro
+        desabilitar_Botoes()
         imagem_original = vec_of_mats.images[-1]  # Obtenha a imagem mais recente do vetor
         imagem_convertida = apply_filter(imagem_original)  # Aplique a conversão de cor
         vec_of_mats.images.append(imagem_convertida)  # Armazene a imagem convertida no vetor
         # Atualize a imagem exibida na janela com a imagem de bordas
         print("Aplicado o filtro e armazenada no vetor.")
         atualizar_imagem_exibida(imagem_convertida)
+        # habilitar botões de filtro
+        habilitar_Botoes()
 
 
 def aplicar_detecao(imagem):
-    # Aplique a detecção de bordas usando o operador Canny
-    imagem_convertida = cv2.Canny(imagem, 100, 200)
-    # Converta a imagem de BGR para RGB antes de armazenar no vetor
-    imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
+    global trackbar_value, botao_Click
+    imagem_convertida_bgr = cv2.cvtColor(imagem, cv2.COLOR_RGB2BGR)
+    while not botao_Click:
+        # Atualize o valor da trackbar (pode ser ajustado)
+        trackbar_value = trackbar.get()
+        # Certifique-se de que o tamanho do kernel seja ímpar
+        if trackbar_value % 2 == 0:
+            trackbar_value += 1
+            trackbar.set(trackbar_value)
+        # Aplique o filtro Canny à imagem atual de acordo com o valor da trackbar
+        imagem_convertida = cv2.Canny(imagem_convertida_bgr, trackbar_value, trackbar_value*2)
+        imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
+        # Atualize a imagem exibida na interface gráfica
+        atualizar_imagem_exibida(imagem_convertida_rgb)
+        # Continue aplicando o filtro em segundo plano
+        janela.update()
+    # Quando o botão "Confirmar" for pressionado, pare o filtro
+    botao_Click = False
     return imagem_convertida_rgb
+
 def detectar_bordas():
     if vec_of_mats.images:
+        # desabilitar botões de filtro
+        desabilitar_Botoes()
         imagem_original = vec_of_mats.images[-1]  # Obtenha a imagem mais recente do vetor
         imagem_convertida = aplicar_detecao(imagem_original) # Você pode ajustar os valores 100 e 200 conforme necessário
         vec_of_mats.images.append(imagem_convertida)
         # Atualize a imagem exibida na janela com a imagem de bordas
         print("Imagem com bordas detectadas e armazenada no vetor.")
         atualizar_imagem_exibida(imagem_convertida)
+        # habilitar botões de filtro
+        habilitar_Botoes()
+
 
 
 def aplicar_binarizacao(imagem):
-     # Converta a imagem para tons de cinza (se já não estiver em tons de cinza)
-        if len(imagem.shape) == 3:
-            imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
-        # Aplique a binarização da imagem
-        _, imagem_convertida = cv2.threshold(imagem, 128, 255, cv2.THRESH_BINARY)
-        # Converta a imagem de BGR para RGB antes de armazenar no vetor
+    global trackbar_value, botao_Click
+    imagem_convertida_bgr = cv2.cvtColor(imagem, cv2.COLOR_RGB2BGR)
+    while not botao_Click:
+        # Atualize o valor da trackbar (pode ser ajustado)
+        trackbar_value = trackbar.get()
+        # Certifique-se de que o tamanho do kernel seja ímpar
+        if trackbar_value % 2 == 0:
+            trackbar_value += 1
+            trackbar.set(trackbar_value)
+        # Aplique a binarização da imagem com o uso da trackbar
+        _, imagem_convertida = cv2.threshold(imagem_convertida_bgr, trackbar_value, 255, cv2.THRESH_BINARY)
         imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
-        return imagem_convertida_rgb
+        # Atualize a imagem exibida na interface gráfica
+        atualizar_imagem_exibida(imagem_convertida_rgb)
+        # Continue aplicando o filtro em segundo plano
+        janela.update()
+    # Quando o botão "Confirmar" for pressionado, pare o filtro
+    botao_Click = False
+    return imagem_convertida_rgb
+
 def binarizar_imagem():
     if vec_of_mats.images:
+        # desabilitar botões de filtro
+        desabilitar_Botoes()
         imagem_original = vec_of_mats.images[-1]  # Obtenha a imagem mais recente do vetor
         imagem_convertida = aplicar_binarizacao(imagem_original) # Você pode ajustar os valores 100 e 200 conforme necessário
         vec_of_mats.images.append(imagem_convertida)
         # Atualize a imagem exibida na janela com a imagem de bordas
         print("Imagem binarizada e armazenada no vetor.")
         atualizar_imagem_exibida(imagem_convertida)
+        # habilitar botões de filtro
+        habilitar_Botoes()
 
 
 def apply_morphology(imagem):
-        # Certifique-se de que a imagem está binarizada (use o valor adequado de limiar)
-        _, imagem_binaria = cv2.threshold(imagem, 128, 255, cv2.THRESH_BINARY)
-        # Defina o kernel para a operação de erosão (pode ajustar o tamanho do kernel)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        # Aplique a operação de erosão
-        imagem_convertida = cv2.erode(imagem_binaria, kernel, iterations=1)
-        # Converta a imagem de BGR para RGB antes de armazenar no vetor
+    global trackbar_value, botao_Click
+    imagem_convertida_bgr = cv2.cvtColor(imagem, cv2.COLOR_RGB2BGR)
+    while not botao_Click:
+        # Atualize o valor da trackbar (pode ser ajustado)
+        trackbar_value = trackbar.get()
+        # Certifique-se de que o tamanho do kernel seja ímpar
+        if trackbar_value % 2 == 0:
+            trackbar_value += 1
+            trackbar.set(trackbar_value)
+        # Aplique a operação de erosão com base no trackbar
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (trackbar_value, trackbar_value))
+        imagem_convertida = cv2.erode(imagem_convertida_bgr, kernel, iterations=1)
         imagem_convertida_rgb = cv2.cvtColor(imagem_convertida, cv2.COLOR_BGR2RGB)
-        return imagem_convertida_rgb
+        # Atualize a imagem exibida na interface gráfica
+        atualizar_imagem_exibida(imagem_convertida_rgb)
+        # Continue aplicando o filtro em segundo plano
+        janela.update()
+    # Quando o botão "Confirmar" for pressionado, pare o filtro
+    botao_Click = False
+    return imagem_convertida_rgb
+
+
+
 def aplicar_morfologia():
     if vec_of_mats.images:
+        # desabilitar botões de filtro
+        desabilitar_Botoes()
         imagem_original = vec_of_mats.images[-1]  # Obtenha a imagem mais recente do vetor
         imagem_convertida = apply_morphology(imagem_original) # Você pode ajustar os valores 100 e 200 conforme necessário
         vec_of_mats.images.append(imagem_convertida)
         # Atualize a imagem exibida na janela com a imagem de bordas
         print("Aplicada a morfologia e armazenada no vetor.")
         atualizar_imagem_exibida(imagem_convertida)
-
+        # habilitar botões de filtro
+        habilitar_Botoes()
 
 
 # Crie a janela principal
@@ -229,8 +330,15 @@ botao_previous = tk.Button(frame_botoes_nav, text="  <  ", width=5, command=exib
 botao_previous.pack(side="left", padx=5)
 botao_next = tk.Button(frame_botoes_nav, text="  >  ", width=5, command=exibir_proxima_imagem)
 botao_next.pack(side="left", padx=5)
+# Configure o botão "Delete" no frame esquerdo
 botao_delete = tk.Button(frame_esquerdo, text="  X  ", width=5, command=delete_imagem)
 botao_delete.grid(row=8, column=0, padx=10, pady=10)
+# Configure o botão "Confirmar" no frame esquerdo
+botao_confirmar = tk.Button(frame_esquerdo, text="Confirmar", width=largura_botoes, command=botao_Confirmar)
+botao_confirmar.grid(row=10, column=0, padx=10, pady=10)
+# crie uma trackbar dentro do frame_esquerdo
+trackbar = tk.Scale(frame_esquerdo, from_=0, to=255, orient="horizontal", length=200)
+trackbar.grid(row=9, column=0, padx=10, pady=10)
 
 
 # Parte direita (80% da largura)

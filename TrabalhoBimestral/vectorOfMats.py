@@ -15,7 +15,9 @@ class VectorOfMats:
             return True
         else:
             return False
-
+    def get_images(self):
+        return self.images
+    
 # Exemplo de uso
 if __name__ == '__main__':
     vec_of_mats = VectorOfMats()
