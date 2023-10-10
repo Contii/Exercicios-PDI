@@ -32,6 +32,7 @@ A ativação depende do sistema operacional. No Windows, o comando é:
 `myenv\Scripts\activate`
 
 <sub>No Linux ou macOS:</sub>
+
  `source myenv/bin/activate`
  
  #### Instalar as bibliotecas:
@@ -43,6 +44,7 @@ execute o seguinte comando no terminal bash:
 Se necessário  executar  o  Activate.ps1  na  pasta  Scripts,  talvez  seja  preciso  desativar  a  seguranca  do  PoweShell.
 
 `Get-ExecutionPolicy`
+
 `Set-ExecutionPolicy RemoteSigned`
 
 <sub>isso afeta  a  seguranca  do  SO,  então  lembre-se  de  reativa-lo  depois  de  terminar.</sub>
